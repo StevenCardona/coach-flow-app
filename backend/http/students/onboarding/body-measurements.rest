@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:5500
+@studentToken = <pegar_token_de_sesion_clerk_del_estudiante>
+@measurementId = <id_de_la_medida>
+
+### Registrar medida corporal (onboarding o seguimiento)
+POST {{baseUrl}}/api/students/me/onboarding/body-measurements
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "weightKg": 72.5,
+  "heightCm": 175,
+  "measuredAt": "2026-06-29",
+  "chestCm": 98,
+  "waistCm": 82,
+  "hipCm": 95,
+  "armCm": 32,
+  "bicepCm": 35
+}
+
+### Actualizar una medida específica
+PUT {{baseUrl}}/api/students/me/onboarding/body-measurements/{{measurementId}}
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "weightKg": 71.8,
+  "waistCm": 80
+}
+
+### Listar historial de medidas
+GET {{baseUrl}}/api/students/me/onboarding/body-measurements
+Authorization: Bearer {{studentToken}}

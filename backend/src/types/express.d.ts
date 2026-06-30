@@ -1,4 +1,5 @@
 import type { Coach } from "../modules/coaches/models/coach.model";
+import type { Student } from "../modules/students/models/student.model";
 import type { User } from "../modules/auth/models/user.model";
 
 declare global {
@@ -9,6 +10,8 @@ declare global {
       clerkId?: string;
 
       coach?: Coach;
+
+      student?: Student;
     }
 
     interface Response {

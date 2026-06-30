@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:5500
+@coachToken = <pegar_token_de_sesion_clerk_del_coach>
+
+### Listar todos los planes
+GET {{baseUrl}}/api/plans
+Authorization: Bearer {{coachToken}}
+
+### Listar solo planes activos
+GET {{baseUrl}}/api/plans?active=true
+Authorization: Bearer {{coachToken}}
+
+### Obtener un plan por ID
+@planId = <uuid_del_plan>
+GET {{baseUrl}}/api/plans/{{planId}}
+Authorization: Bearer {{coachToken}}

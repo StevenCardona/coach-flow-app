@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:5500
+@studentToken = <pegar_token_de_sesion_clerk_del_estudiante>
+
+### Registrar información personal (primera vez)
+POST {{baseUrl}}/api/students/me/onboarding/personal-info
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "phoneNumber": "+34600111222",
+  "birthday": "1995-03-15",
+  "gender": "FEMALE",
+  "observations": "Prefiero entrenar por las mañanas",
+  "medicalCondition": null
+}
+
+### Actualizar información personal
+PUT {{baseUrl}}/api/students/me/onboarding/personal-info
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "phoneNumber": "+34600999888",
+  "observations": "Actualizado desde el perfil"
+}
+
+### Obtener información personal
+GET {{baseUrl}}/api/students/me/onboarding/personal-info
+Authorization: Bearer {{studentToken}}

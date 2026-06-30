@@ -10,6 +10,9 @@ import {
   responseMiddleware,
 } from "./middleware";
 import authRoutes from "./modules/auth/routes/auth.routes";
+import planRoutes from "./modules/plans/routes/plan.routes";
+import studentPlanHistoryRoutes from "./modules/plans/routes/student-plan-history.routes";
+import studentOnboardingRoutes from "./modules/students/routes/student-onboarding.routes";
 import studentRoutes from "./modules/students/routes/student.routes";
 
 const app = express();
@@ -25,7 +28,10 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/plans", planRoutes);
+app.use("/api/students", studentOnboardingRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/students", studentPlanHistoryRoutes);
 
 app.get(
   "/api/me",

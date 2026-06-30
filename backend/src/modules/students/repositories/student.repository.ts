@@ -2,6 +2,7 @@ import type { Transaction } from "sequelize";
 
 import { Student } from "../models/student.model";
 import type { CreateStudentInput } from "../types/student.types";
+import type { UpdatePersonalInfoInput } from "../types/student-onboarding.types";
 
 export const studentRepository = {
   create(data: CreateStudentInput, transaction?: Transaction) {
@@ -36,5 +37,24 @@ export const studentRepository = {
 
   deleteById(studentId: string, transaction?: Transaction) {
     return Student.destroy({ where: { id: studentId }, transaction });
+  },
+
+  updatePersonalInfo(
+    studentId: string,
+    data: UpdatePersonalInfoInput,
+    transaction?: Transaction,
+  ) {
+    return Student.update(data, { where: { id: studentId }, transaction });
+  },
+
+  setOnboardingCompleted(
+    studentId: string,
+    completed: boolean,
+    transaction?: Transaction,
+  ) {
+    return Student.update(
+      { onboardingCompleted: completed },
+      { where: { id: studentId }, transaction },
+    );
   },
 };

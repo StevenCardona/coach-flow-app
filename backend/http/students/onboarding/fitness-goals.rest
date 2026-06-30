@@ -1,0 +1,30 @@
+@baseUrl = http://localhost:5500
+@studentToken = <pegar_token_de_sesion_clerk_del_estudiante>
+
+### Registrar objetivos (primera vez)
+POST {{baseUrl}}/api/students/me/onboarding/fitness-goals
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "trainingGoal": "MUSCLE_GAIN",
+  "weeklyTrainingHours": 5,
+  "budgetForNutrition": 150.00,
+  "hasGymAccess": true,
+  "trainsFromHome": false,
+  "additionalInfo": "Quiero enfocarme en tren superior"
+}
+
+### Actualizar objetivos
+PUT {{baseUrl}}/api/students/me/onboarding/fitness-goals
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "weeklyTrainingHours": 6,
+  "trainsFromHome": true
+}
+
+### Obtener objetivos
+GET {{baseUrl}}/api/students/me/onboarding/fitness-goals
+Authorization: Bearer {{studentToken}}

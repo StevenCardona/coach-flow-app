@@ -23,6 +23,7 @@ export class Student extends Model<
   declare gender: Gender | null;
   declare observations: string | null;
   declare medicalCondition: string | null;
+  declare personalInfoCompleted: CreationOptional<boolean>;
   declare onboardingCompleted: CreationOptional<boolean>;
   declare isActive: CreationOptional<boolean>;
   declare streamChannelId: string | null;
@@ -76,6 +77,12 @@ Student.init(
       type: DataTypes.TEXT,
       allowNull: true,
       field: "medical_condition",
+    },
+    personalInfoCompleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "personal_info_completed",
     },
     onboardingCompleted: {
       type: DataTypes.BOOLEAN,

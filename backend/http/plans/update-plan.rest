@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:5500
+@coachToken = <pegar_token_de_sesion_clerk_del_coach>
+@planId = <uuid_del_plan>
+
+PATCH {{baseUrl}}/api/plans/{{planId}}
+Authorization: Bearer {{coachToken}}
+Content-Type: application/json
+
+{
+  "name": "Plan Mensual Presencial Plus",
+  "amount": 59.99,
+  "isActive": true
+}
