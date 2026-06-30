@@ -28,3 +28,8 @@ export function setupAxiosAuth(getToken: GetToken) {
     },
   );
 }
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error),
+);
