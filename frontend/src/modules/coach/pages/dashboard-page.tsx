@@ -1,23 +1,16 @@
-"use client";
+import { LayoutDashboard } from "lucide-react";
 
-import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
+import { CfSkeleton, PageHeader } from "@/components/cf";
 
 export function DashboardPage() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-      <p className="text-muted-foreground">
-        Bienvenido a Coach Flow. Has iniciado sesión correctamente.
-      </p>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => toast.success("Coach Flow listo")}
-      >
-        Probar notificación
-      </Button>
+    <div className="space-y-6">
+      <PageHeader
+        title="Dashboard"
+        subtitle="Resumen general de tu actividad como coach"
+        icon={LayoutDashboard}
+      />
+      <CfSkeleton variant="page" />
     </div>
   );
 }
