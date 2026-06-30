@@ -86,7 +86,7 @@ export const setupAssociations = () => {
   StudentPlanHistory.belongsTo(Plan, { foreignKey: "plan_id", as: "plan" });
   StudentPlanHistory.belongsTo(User, {
     foreignKey: "registered_by",
-    as: "registeredBy",
+    as: "registrar",
   });
 
   BodyMeasurement.belongsTo(Student, {
@@ -220,6 +220,6 @@ export const setupAssociations = () => {
 
   AiGenerationLog.belongsTo(User, {
     foreignKey: "requested_by",
-    as: "requestedBy",
+    as: "requester",
   });
 };
