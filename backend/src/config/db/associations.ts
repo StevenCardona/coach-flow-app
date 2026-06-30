@@ -53,6 +53,7 @@ export const setupAssociations = () => {
   });
 
   Invitation.belongsTo(Coach, { foreignKey: "coach_id", as: "coach" });
+  Invitation.belongsTo(Student, { foreignKey: "student_id", as: "student" });
 
   Student.belongsTo(User, { foreignKey: "user_id", as: "user" });
   Student.belongsTo(Coach, { foreignKey: "coach_id", as: "coach" });

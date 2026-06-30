@@ -14,7 +14,7 @@ export class User extends Model<
   InferCreationAttributes<User>
 > {
   declare id: CreationOptional<string>;
-  declare clerkId: string;
+  declare clerkId: string | null;
   declare email: string;
   declare name: string;
   declare role: Role;
@@ -30,7 +30,7 @@ User.init(
     },
     clerkId: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
       field: "clerk_id",
     },

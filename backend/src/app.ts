@@ -10,6 +10,7 @@ import {
   responseMiddleware,
 } from "./middleware";
 import authRoutes from "./modules/auth/routes/auth.routes";
+import studentRoutes from "./modules/students/routes/student.routes";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/students", studentRoutes);
 
 app.get(
   "/api/me",

@@ -15,8 +15,10 @@ export class Invitation extends Model<
 > {
   declare id: CreationOptional<string>;
   declare coachId: string;
+  declare studentId: string | null;
   declare email: string;
-  declare token: string;
+  declare token: string | null;
+  declare clerkInvitationId: string | null;
   declare status: InvitationStatus;
   declare expiresAt: Date;
 }
@@ -34,14 +36,25 @@ Invitation.init(
       field: "coach_id",
       references: { model: "coaches", key: "id" },
     },
+    studentId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      field: "student_id",
+      references: { model: "students", key: "id" },
+    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     token: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
+    },
+    clerkInvitationId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "clerk_invitation_id",
     },
     status: {
       type: DataTypes.ENUM(...Object.values(InvitationStatus)),

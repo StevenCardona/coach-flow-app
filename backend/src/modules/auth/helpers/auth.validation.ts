@@ -1,8 +1,11 @@
 import { z } from "zod";
 
-export const registerCoachSchema = z.object({
+import { Role } from "../../../types";
+
+export const registerSchema = z.object({
+  role: z.enum(Object.values(Role) as [string, ...string[]]),
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(255),
 });
 
-export type RegisterCoachBody = z.infer<typeof registerCoachSchema>;
+export type RegisterBody = z.infer<typeof registerSchema>;

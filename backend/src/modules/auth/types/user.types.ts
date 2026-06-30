@@ -6,3 +6,9 @@ export interface CreateUserInput {
   name: string;
   role: Role;
 }
+
+export interface CreatePendingUserInput {
+  email: string;
+  name: string;
+  role: Role;
+}

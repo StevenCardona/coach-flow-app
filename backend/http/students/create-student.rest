@@ -1,0 +1,16 @@
+@baseUrl = http://localhost:5500
+@coachToken = <pegar_token_de_sesion_clerk_del_coach>
+
+POST {{baseUrl}}/api/students
+Authorization: Bearer {{coachToken}}
+Content-Type: application/json
+
+{
+  "name": "María García",
+  "email": "maria@example.com",
+  "phoneNumber": "+34600111222",
+  "birthday": "1995-03-15",
+  "gender": "FEMALE",
+  "observations": "Objetivo: ganar masa muscular",
+  "medicalCondition": null
+}

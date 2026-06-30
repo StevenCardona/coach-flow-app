@@ -1,0 +1,6 @@
+@baseUrl = http://localhost:5500
+@coachToken = <pegar_token_de_sesion_clerk_del_coach>
+@studentId = <uuid_del_estudiante>
+
+PATCH {{baseUrl}}/api/students/{{studentId}}/deactivate
+Authorization: Bearer {{coachToken}}
