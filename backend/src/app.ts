@@ -1,15 +1,39 @@
-import express from "express";
 import cors from "cors";
+import express from "express";
+
+import {
+  asyncHandler,
+  clerkMiddleware,
+  errorHandler,
+  notFoundHandler,
+  requireAuth,
+  responseMiddleware,
+} from "./middleware";
+import authRoutes from "./modules/auth/routes/auth.routes";
+
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(responseMiddleware);
+app.use(clerkMiddleware);
 
-//
 app.get("/", (_req, res) => {
-  res.json({ message: "🚀 API working..." });
+  res.success({ status: "ok" }, "API funcionando");
 });
+
+app.use("/api/auth", authRoutes);
+
+app.get(
+  "/api/me",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    res.success(req.user, "Usuario obtenido");
+  }),
+);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;

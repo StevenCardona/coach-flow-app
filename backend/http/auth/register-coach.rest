@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:5500
+@clerkToken = <pegar_token_de_sesion_clerk>
+
+POST {{baseUrl}}/api/auth/register/coach
+Authorization: Bearer {{clerkToken}}
+Content-Type: application/json
+
+{
+  "name": "Juan Pérez",
+  "email": "juan@example.com"
+}
