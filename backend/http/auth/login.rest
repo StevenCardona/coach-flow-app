@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:5500/api/boards
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlNWU2NDFiYy0xZjRjLTQ1ZWItOGYxMy0wYTFlYzM1NDczMmYiLCJlbWFpbCI6InJvb3RAZ21haWwuY29tIiwiaWF0IjoxNzgxMjM4NDA3LCJleHAiOjE3ODEyMzk0MDd9.NtXZaWYh86IBwayon_iZ-gs1U7HOL3cARy-fZkC8lu8
+@boardId = 30d11f62-0201-4a27-87d0-4ca35ea49991
+
+### Create Board - Valid
+POST {{baseUrl}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Proyecto Personal",
+  "description": "Tablero para organizar tareas del proyecto"
+}
+
+### Get Board
+GET {{baseUrl}}/{{boardId}}
+Authorization: Bearer {{authToken}}
+
+
+### Delete Board 
+DELETE {{baseUrl}}/{{boardId}}
+Authorization: Bearer {{authToken}}
+
+### Update Board 
+PUT {{baseUrl}}/{{boardId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Proyect board-flow",
+  "description": "Tablero para organizar tareas del proyecto del tablero"
+}
