@@ -16,3 +16,12 @@ export interface AssignPlanRequest {
   endDate?: string | null;
   notes?: string | null;
 }
+
+export interface UpdateStudentRequest {
+  name?: string;
+  phoneNumber?: string | null;
+  birthday?: string | null;
+  gender?: Gender | null;
+  observations?: string | null;
+  medicalCondition?: string | null;
+}

@@ -8,7 +8,7 @@ import type {
   UpdatePersonalInfoRequest,
 } from "../types/requests";
 
-const BASE = "/students/me/onboarding/personal-info";
+const BASE = "/me/onboarding/personal-info";
 
 export async function createPersonalInfo(body: CreatePersonalInfoRequest) {
   return unwrapResponse(

@@ -17,3 +17,12 @@ export const createStudentSchema = z.object({
 });
 
 export type CreateStudentBody = z.infer<typeof createStudentSchema>;
+
+export const updateStudentSchema = createStudentSchema
+  .omit({ email: true })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Debe enviar al menos un campo para actualizar",
+  });
+
+export type UpdateStudentBody = z.infer<typeof updateStudentSchema>;

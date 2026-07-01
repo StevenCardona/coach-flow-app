@@ -31,7 +31,6 @@ Coach.init(
       allowNull: true,
       unique: true,
       field: "user_id",
-      references: { model: "users", key: "id" },
     },
     name: {
       type: DataTypes.STRING,

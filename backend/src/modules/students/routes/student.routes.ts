@@ -5,8 +5,12 @@ import {
   requireCoach,
   validate,
 } from "../../../middleware";
+import { paginationQuerySchema } from "../../../helpers/pagination.validation";
 import { studentController } from "../controllers/student.controller";
-import { createStudentSchema } from "../helpers/student.validation";
+import {
+  createStudentSchema,
+  updateStudentSchema,
+} from "../helpers/student.validation";
 
 const router = Router();
 
@@ -18,9 +22,21 @@ router.post(
   asyncHandler(studentController.create),
 );
 
-router.get("/", asyncHandler(studentController.list));
+router.get(
+  "/",
+  validate(paginationQuerySchema, "query"),
+  asyncHandler(studentController.list),
+);
+
+router.get("/stats", asyncHandler(studentController.stats));
 
 router.get("/:id", asyncHandler(studentController.getById));
+
+router.patch(
+  "/:id",
+  validate(updateStudentSchema),
+  asyncHandler(studentController.update),
+);
 
 router.patch("/:id/deactivate", asyncHandler(studentController.deactivate));
 

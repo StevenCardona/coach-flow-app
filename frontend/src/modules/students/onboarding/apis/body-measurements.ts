@@ -8,7 +8,7 @@ import type {
   UpdateBodyMeasurementRequest,
 } from "../types/requests";
 
-const BASE = "/students/me/onboarding/body-measurements";
+const BASE = "/me/onboarding/body-measurements";
 
 export async function createBodyMeasurement(body: CreateBodyMeasurementRequest) {
   return unwrapResponse(

@@ -20,53 +20,53 @@ const router = Router();
 router.use(requireStudent);
 
 router.post(
-  "/me/onboarding/personal-info",
+  "/personal-info",
   validate(createPersonalInfoSchema),
   asyncHandler(studentOnboardingController.createPersonalInfo),
 );
 
 router.put(
-  "/me/onboarding/personal-info",
+  "/personal-info",
   validate(updatePersonalInfoSchema),
   asyncHandler(studentOnboardingController.updatePersonalInfo),
 );
 
 router.get(
-  "/me/onboarding/personal-info",
+  "/personal-info",
   asyncHandler(studentOnboardingController.getPersonalInfo),
 );
 
 router.post(
-  "/me/onboarding/body-measurements",
+  "/body-measurements",
   validate(createBodyMeasurementSchema),
   asyncHandler(studentOnboardingController.createBodyMeasurement),
 );
 
 router.put(
-  "/me/onboarding/body-measurements/:id",
+  "/body-measurements/:id",
   validate(updateBodyMeasurementSchema),
   asyncHandler(studentOnboardingController.updateBodyMeasurement),
 );
 
 router.get(
-  "/me/onboarding/body-measurements",
+  "/body-measurements",
   asyncHandler(studentOnboardingController.listBodyMeasurements),
 );
 
 router.post(
-  "/me/onboarding/fitness-goals",
+  "/fitness-goals",
   validate(createFitnessGoalSchema),
   asyncHandler(studentOnboardingController.createFitnessGoal),
 );
 
 router.put(
-  "/me/onboarding/fitness-goals",
+  "/fitness-goals",
   validate(updateFitnessGoalSchema),
   asyncHandler(studentOnboardingController.updateFitnessGoal),
 );
 
 router.get(
-  "/me/onboarding/fitness-goals",
+  "/fitness-goals",
   asyncHandler(studentOnboardingController.getFitnessGoal),
 );
 

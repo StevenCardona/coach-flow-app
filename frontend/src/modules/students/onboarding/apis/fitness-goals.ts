@@ -8,7 +8,7 @@ import type {
   UpdateFitnessGoalRequest,
 } from "../types/requests";
 
-const BASE = "/students/me/onboarding/fitness-goals";
+const BASE = "/me/onboarding/fitness-goals";
 
 export async function createFitnessGoal(body: CreateFitnessGoalRequest) {
   return unwrapResponse(api.post<ApiResponse<FitnessGoal>>(BASE, body));

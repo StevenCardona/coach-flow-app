@@ -6,7 +6,15 @@ export type { CardProps } from "./data-display/card";
 export { CardActionButton, CardActions } from "./data-display/card-actions";
 export type { CardActionButtonProps, CardActionsProps } from "./data-display/card-actions";
 export { DataTable } from "./data-display/data-table";
-export type { DataTableColumn, DataTableProps } from "./data-display/data-table";
+export type {
+  DataTableColumn,
+  DataTablePagination,
+  DataTableProps,
+  DataTableSorting,
+  StatusFilterValue,
+} from "./data-display/data-table";
+export { Pagination } from "./data-display/pagination";
+export type { PaginationProps } from "./data-display/pagination";
 export { CfTabs } from "./data-display/tabs";
 export type { CfTab, CfTabsProps } from "./data-display/tabs";
 

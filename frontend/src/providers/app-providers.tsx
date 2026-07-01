@@ -1,25 +1,29 @@
 "use client";
 
-import { ClerkProvider } from "@clerk/nextjs";
 import type { ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import { AppProvider } from "@/lib/stores/app-context";
+import { AuthProvider } from "@/providers/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
 
 interface AppProvidersProps {
   children: ReactNode;
+  initialIsAuthenticated: boolean;
 }
 
-export function AppProviders({ children }: AppProvidersProps) {
+export function AppProviders({
+  children,
+  initialIsAuthenticated,
+}: AppProvidersProps) {
   return (
-    <ClerkProvider>
-      <QueryProvider>
+    <QueryProvider>
+      <AuthProvider initialIsAuthenticated={initialIsAuthenticated}>
         <AppProvider>
           {children}
           <Toaster />
         </AppProvider>
-      </QueryProvider>
-    </ClerkProvider>
+      </AuthProvider>
+    </QueryProvider>
   );
 }

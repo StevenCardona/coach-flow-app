@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Mono, DM_Sans, Syne } from "next/font/google";
 
+import { getServerHasAccessToken } from "@/lib/auth/server-token";
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
@@ -28,18 +29,22 @@ export const metadata: Metadata = {
   description: "Plataforma de coaching fitness",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialIsAuthenticated = await getServerHasAccessToken();
+
   return (
     <html
       lang="es"
       className={`${syne.variable} ${dmSans.variable} ${dmMono.variable}`}
     >
       <body className="font-sans antialiased">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders initialIsAuthenticated={initialIsAuthenticated}>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

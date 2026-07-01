@@ -6,17 +6,17 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
-
-      clerkId?: string;
-
       coach?: Coach;
-
       student?: Student;
+      validated?: {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+      };
     }
 
     interface Response {
       success<T>(data: T, message?: string, statusCode?: number): this;
-
       error(message: string, statusCode?: number, data?: unknown): this;
     }
   }

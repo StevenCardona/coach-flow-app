@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 
 import type { ApiErrorResponse, ApiResponse } from "@/lib/types/api.types";
 
@@ -27,6 +27,10 @@ export function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
 
 export function getApiErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
+    if (error.response?.status === 500) {
+      return "Ocurrió un error en el servidor. Intenta de nuevo más tarde.";
+    }
+
     const responseData = error.response?.data;
 
     if (isApiErrorResponse(responseData)) {

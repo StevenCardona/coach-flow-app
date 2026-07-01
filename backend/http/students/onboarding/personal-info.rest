@@ -1,9 +1,19 @@
-@baseUrl = http://localhost:5500
-@studentToken = <pegar_token_de_sesion_clerk_del_estudiante>
+@baseUrl = http://localhost:5500/api
+@token = {{login.response.body.data.token}}
 
-### Registrar información personal (primera vez)
-POST {{baseUrl}}/api/students/me/onboarding/personal-info
-Authorization: Bearer {{studentToken}}
+### Login student
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alumno@ejemplo.com",
+  "password": "alumno@ejemplo.com"
+}
+
+### Register personal info (first time)
+POST {{baseUrl}}/me/onboarding/personal-info
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -14,9 +24,9 @@ Content-Type: application/json
   "medicalCondition": null
 }
 
-### Actualizar información personal
-PUT {{baseUrl}}/api/students/me/onboarding/personal-info
-Authorization: Bearer {{studentToken}}
+### Update personal info
+PUT {{baseUrl}}/me/onboarding/personal-info
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -24,6 +34,6 @@ Content-Type: application/json
   "observations": "Actualizado desde el perfil"
 }
 
-### Obtener información personal
-GET {{baseUrl}}/api/students/me/onboarding/personal-info
-Authorization: Bearer {{studentToken}}
+### Get personal info
+GET {{baseUrl}}/me/onboarding/personal-info
+Authorization: Bearer {{token}}

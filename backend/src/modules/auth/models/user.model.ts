@@ -14,9 +14,10 @@ export class User extends Model<
   InferCreationAttributes<User>
 > {
   declare id: CreationOptional<string>;
-  declare clerkId: string | null;
   declare email: string;
   declare name: string;
+  declare passwordHash: string;
+  declare mustChangePassword: CreationOptional<boolean>;
   declare role: Role;
   declare isActive: CreationOptional<boolean>;
 }
@@ -28,12 +29,6 @@ User.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    clerkId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-      field: "clerk_id",
-    },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -42,6 +37,17 @@ User.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    passwordHash: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: "password_hash",
+    },
+    mustChangePassword: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "must_change_password",
     },
     role: {
       type: DataTypes.ENUM(...Object.values(Role)),
@@ -60,5 +66,13 @@ User.init(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    defaultScope: {
+      attributes: { exclude: ["passwordHash"] },
+    },
+    scopes: {
+      withPassword: {
+        attributes: { include: ["passwordHash"] },
+      },
+    },
   },
 );

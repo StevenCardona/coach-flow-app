@@ -4,7 +4,7 @@ config({
   path: `.env.${process.env.NODE_ENV || "development"}.local`,
 });
 
-export const PORT = Number(process.env.PORT) || 3000;
+export const PORT = Number(process.env.PORT) || 5500;
 
 export const NODE_ENV = process.env.NODE_ENV || "development";
 
@@ -20,11 +20,10 @@ export const DATABASE_URL_DIRECT =
 
 export const JWT_SECRET = process.env.JWT_SECRET || "";
 
-export const JWT_EXPIRES_IN = Number(process.env.JWT_EXPIRES_IN) || 900000;
+export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-export const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY || "";
+export const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-export const CLERK_PUBLISHABLE_KEY = process.env.CLERK_PUBLISHABLE_KEY || "";
-
-export const CLERK_INVITATION_REDIRECT_URL =
-  process.env.CLERK_INVITATION_REDIRECT_URL || "";
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET es requerido en el archivo .env");
+}

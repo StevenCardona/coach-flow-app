@@ -31,12 +31,3 @@ export const PlanHistoryStatus = {
 
 export type PlanHistoryStatus =
   (typeof PlanHistoryStatus)[keyof typeof PlanHistoryStatus];
-
-export const InvitationStatus = {
-  PENDING: "PENDING",
-  ACCEPTED: "ACCEPTED",
-  EXPIRED: "EXPIRED",
-} as const;
-
-export type InvitationStatus =
-  (typeof InvitationStatus)[keyof typeof InvitationStatus];

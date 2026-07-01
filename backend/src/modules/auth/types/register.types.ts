@@ -4,16 +4,5 @@ export interface RegisterInput {
   role: Role;
   name: string;
   email: string;
+  password: string;
 }
-
-export interface RegisterCoachResponse {
-  user: unknown;
-  coach: unknown;
-}
-
-export interface RegisterStudentResponse {
-  user: unknown;
-  student: unknown;
-}
-
-export type RegisterResponse = RegisterCoachResponse | RegisterStudentResponse;

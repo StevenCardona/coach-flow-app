@@ -1,10 +1,20 @@
-@baseUrl = http://localhost:5500
-@studentToken = <pegar_token_de_sesion_clerk_del_estudiante>
+@baseUrl = http://localhost:5500/api
+@token = {{login.response.body.data.token}}
 @measurementId = <id_de_la_medida>
 
-### Registrar medida corporal (onboarding o seguimiento)
-POST {{baseUrl}}/api/students/me/onboarding/body-measurements
-Authorization: Bearer {{studentToken}}
+### Login student
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "alumno@ejemplo.com",
+  "password": "newpassword123"
+}
+
+### Register body measurement
+POST {{baseUrl}}/me/onboarding/body-measurements
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -18,9 +28,9 @@ Content-Type: application/json
   "bicepCm": 35
 }
 
-### Actualizar una medida específica
-PUT {{baseUrl}}/api/students/me/onboarding/body-measurements/{{measurementId}}
-Authorization: Bearer {{studentToken}}
+### Update measurement
+PUT {{baseUrl}}/me/onboarding/body-measurements/{{measurementId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -28,6 +38,6 @@ Content-Type: application/json
   "waistCm": 80
 }
 
-### Listar historial de medidas
-GET {{baseUrl}}/api/students/me/onboarding/body-measurements
-Authorization: Bearer {{studentToken}}
+### List measurements
+GET {{baseUrl}}/me/onboarding/body-measurements
+Authorization: Bearer {{token}}

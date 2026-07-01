@@ -1,24 +1,12 @@
-@baseUrl = http://localhost:5500
-@clerkToken = <pegar_token_de_sesion_clerk>
+@baseUrl = http://localhost:5500/api
 
-### Registrar coach
-POST {{baseUrl}}/api/auth/register
-Authorization: Bearer {{clerkToken}}
+### Register coach
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
   "role": "COACH",
-  "name": "Juan Pérez",
-  "email": "juan@example.com"
-}
-
-### Registrar estudiante (después de aceptar invitación Clerk)
-POST {{baseUrl}}/api/auth/register
-Authorization: Bearer {{clerkToken}}
-Content-Type: application/json
-
-{
-  "role": "STUDENT",
-  "name": "María García",
-  "email": "maria@example.com"
+  "name": "Coach Demo",
+  "email": "coach@ejemplo.com",
+  "password": "password123"
 }

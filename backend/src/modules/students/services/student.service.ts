@@ -1,16 +1,20 @@
 import type { Transaction } from "sequelize";
 
 import { sequelize } from "../../../config/db/db";
+import { hashPassword } from "../../../helpers/password.helper";
 import { Role } from "../../../types";
+import type { PaginationQuery } from "../../../types/pagination.types";
 import { AppError } from "../../../types/error";
-import { clerkService } from "../../auth/services/clerk.service";
 import { userService } from "../../auth/services/user.service";
-import { invitationRepository } from "../repositories/invitation.repository";
 import { studentRepository } from "../repositories/student.repository";
 import type {
   CreateStudentByCoachInput,
   CreateStudentInput,
+  UpdateStudentByCoachInput,
 } from "../types/student.types";
+
+const STUDENT_CREDENTIALS_MESSAGE =
+  "El alumno puede iniciar sesión con su correo como usuario y contraseña. Deberá cambiar la contraseña al ingresar.";
 
 export const studentService = {
   createStudent(input: CreateStudentInput, transaction?: Transaction) {
@@ -21,8 +25,20 @@ export const studentService = {
     return studentRepository.findByUserId(userId, transaction);
   },
 
+  getById(studentId: string, transaction?: Transaction) {
+    return studentRepository.findById(studentId, transaction);
+  },
+
   getByCoachId(coachId: string) {
     return studentRepository.findByCoachId(coachId);
+  },
+
+  listByCoach(coachId: string, query: PaginationQuery) {
+    return studentRepository.findPaginatedByCoachId(coachId, query);
+  },
+
+  getStatsByCoach(coachId: string) {
+    return studentRepository.getStatsByCoachId(coachId);
   },
 
   async getByCoachAndId(coachId: string, studentId: string) {
@@ -35,12 +51,43 @@ export const studentService = {
     return student;
   },
 
+  async updateStudentByCoach(
+    coachId: string,
+    studentId: string,
+    input: UpdateStudentByCoachInput,
+  ) {
+    const student = await this.getByCoachAndId(coachId, studentId);
+    const user = await userService.getById(student.userId);
+
+    if (!user) {
+      throw new AppError(404, "Usuario asociado no encontrado");
+    }
+
+    await sequelize.transaction(async (transaction) => {
+      await studentRepository.updateByCoach(studentId, input, transaction);
+
+      if (input.name && input.name !== student.name) {
+        await userService.updateProfile(
+          user.id,
+          { name: input.name },
+          transaction,
+        );
+      }
+    });
+
+    return this.getByCoachAndId(coachId, studentId);
+  },
+
   async createStudentByCoach(coachId: string, input: CreateStudentByCoachInput) {
+    const passwordHash = await hashPassword(input.email);
+
     const { user, student } = await sequelize.transaction(async (transaction) => {
-      const createdUser = await userService.createPendingUser(
+      const createdUser = await userService.createUser(
         {
           email: input.email,
           name: input.name,
+          passwordHash,
+          mustChangePassword: true,
           role: Role.STUDENT,
         },
         transaction,
@@ -64,46 +111,28 @@ export const studentService = {
       return { user: createdUser, student: createdStudent };
     });
 
-    try {
-      const clerkInvitation = await clerkService.sendInvitation(input.email, {
-        role: Role.STUDENT,
-        studentId: student.id,
-      });
-
-      const rawExpiresAt = (clerkInvitation as { expiresAt?: number | null })
-        .expiresAt;
-      const expiresAt = rawExpiresAt
-        ? new Date(rawExpiresAt)
-        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-      const invitation = await invitationRepository.create({
-        coachId,
-        studentId: student.id,
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        mustChangePassword: user.mustChangePassword,
+        isActive: user.isActive,
+      },
+      student: {
+        id: student.id,
+        userId: student.userId,
+        coachId: student.coachId,
+        name: student.name,
+        email: student.email,
+      },
+      credentials: {
         email: input.email,
-        clerkInvitationId: clerkInvitation.id,
-        expiresAt,
-      });
-
-      return {
-        user,
-        student,
-        invitation,
-        clerkSynced: true,
-      };
-    } catch (error) {
-      await sequelize.transaction(async (transaction) => {
-        await studentRepository.deleteById(student.id, transaction);
-        await userService.deleteUser(user.id, transaction);
-      });
-
-      const clerkMessage =
-        error instanceof Error ? error.message : "Error desconocido en Clerk";
-
-      throw new AppError(
-        502,
-        `Estudiante no creado: falló el envío de invitación en Clerk. Se revirtió la creación en la base de datos. Detalle: ${clerkMessage}`,
-      );
-    }
+        initialPassword: input.email,
+        message: STUDENT_CREDENTIALS_MESSAGE,
+      },
+    };
   },
 
   async deactivateStudent(coachId: string, studentId: string) {
@@ -123,36 +152,9 @@ export const studentService = {
       await studentRepository.setActive(student.id, false, transaction);
     });
 
-    if (user.clerkId) {
-      try {
-        await clerkService.banUser(user.clerkId);
-      } catch (error) {
-        await sequelize.transaction(async (transaction) => {
-          await userService.setActive(user.id, true, transaction);
-          await studentRepository.setActive(student.id, true, transaction);
-        });
-
-        const clerkMessage =
-          error instanceof Error ? error.message : "Error desconocido en Clerk";
-
-        throw new AppError(
-          502,
-          `No se pudo inactivar en Clerk. Se revirtió el estado en la base de datos. Detalle: ${clerkMessage}`,
-        );
-      }
-
-      return {
-        studentId: student.id,
-        clerkSynced: true,
-        message: "Estudiante inactivado en la base de datos y bloqueado en Clerk",
-      };
-    }
-
     return {
       studentId: student.id,
-      clerkSynced: false,
-      message:
-        "Estudiante inactivado en la base de datos. Sin cuenta Clerk vinculada",
+      message: "Estudiante inactivado correctamente",
     };
   },
 
@@ -164,33 +166,6 @@ export const studentService = {
       throw new AppError(404, "Usuario asociado no encontrado");
     }
 
-    const pendingInvitations =
-      await invitationRepository.findPendingInvitationsByStudentId(student.id);
-
-    if (user.clerkId) {
-      try {
-        await clerkService.deleteUser(user.clerkId);
-      } catch (error) {
-        const clerkMessage =
-          error instanceof Error ? error.message : "Error desconocido en Clerk";
-
-        throw new AppError(
-          502,
-          `No se pudo eliminar en Clerk. La base de datos no fue modificada. Detalle: ${clerkMessage}`,
-        );
-      }
-    }
-
-    for (const invitation of pendingInvitations) {
-      if (invitation.clerkInvitationId) {
-        try {
-          await clerkService.revokeInvitation(invitation.clerkInvitationId);
-        } catch {
-          // Non-blocking: student deletion proceeds even if revoke fails
-        }
-      }
-    }
-
     await sequelize.transaction(async (transaction) => {
       await studentRepository.deleteById(student.id, transaction);
       await userService.deleteUser(user.id, transaction);
@@ -198,11 +173,7 @@ export const studentService = {
 
     return {
       studentId: student.id,
-      clerkDeleted: Boolean(user.clerkId),
-      invitationsRevoked: pendingInvitations.length,
-      message: user.clerkId
-        ? "Estudiante eliminado en Clerk y en la base de datos"
-        : "Estudiante pendiente eliminado en la base de datos e invitaciones revocadas si aplicaba",
+      message: "Estudiante eliminado correctamente",
     };
   },
 };

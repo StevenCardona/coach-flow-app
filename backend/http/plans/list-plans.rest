@@ -1,15 +1,25 @@
-@baseUrl = http://localhost:5500
-@coachToken = <pegar_token_de_sesion_clerk_del_coach>
+@baseUrl = http://localhost:5500/api
+@token = {{login.response.body.data.token}}
 
-### Listar todos los planes
-GET {{baseUrl}}/api/plans
-Authorization: Bearer {{coachToken}}
+### Login coach
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
 
-### Listar solo planes activos
-GET {{baseUrl}}/api/plans?active=true
-Authorization: Bearer {{coachToken}}
+{
+  "email": "coach@ejemplo.com",
+  "password": "password123"
+}
 
-### Obtener un plan por ID
+### List all plans
+GET {{baseUrl}}/plans
+Authorization: Bearer {{token}}
+
+### List active plans only
+GET {{baseUrl}}/plans?active=true
+Authorization: Bearer {{token}}
+
+### Get plan by ID
 @planId = <uuid_del_plan>
-GET {{baseUrl}}/api/plans/{{planId}}
-Authorization: Bearer {{coachToken}}
+GET {{baseUrl}}/plans/{{planId}}
+Authorization: Bearer {{token}}

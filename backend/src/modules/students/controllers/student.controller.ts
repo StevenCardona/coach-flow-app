@@ -1,8 +1,16 @@
 import type { Request, Response } from "express";
 
 import type { Gender } from "../../../types";
+import {
+  parsePaginationQuery,
+} from "../../../helpers/pagination.util";
+import type { PaginationQueryInput } from "../../../helpers/pagination.validation";
+import { getValidatedQuery } from "../../../helpers/validation.helper";
 import { studentService } from "../services/student.service";
-import type { CreateStudentBody } from "../helpers/student.validation";
+import type {
+  CreateStudentBody,
+  UpdateStudentBody,
+} from "../helpers/student.validation";
 
 export const studentController = {
   async create(req: Request, res: Response) {
@@ -12,16 +20,22 @@ export const studentController = {
       gender: (body.gender as Gender | null | undefined) ?? null,
     });
 
-    res.success(
-      result,
-      "Estudiante creado e invitación enviada",
-      201,
-    );
+    res.success(result, "Estudiante creado correctamente", 201);
   },
 
   async list(req: Request, res: Response) {
-    const students = await studentService.getByCoachId(req.coach!.id);
-    res.success(students, "Estudiantes obtenidos");
+    const query = parsePaginationQuery(
+      getValidatedQuery<PaginationQueryInput>(req),
+    );
+    const result = await studentService.listByCoach(req.coach!.id, query);
+
+    res.success(result, "Estudiantes obtenidos");
+  },
+
+  async stats(req: Request, res: Response) {
+    const stats = await studentService.getStatsByCoach(req.coach!.id);
+
+    res.success(stats, "Estadísticas de estudiantes obtenidas");
   },
 
   async getById(req: Request, res: Response) {
@@ -31,6 +45,20 @@ export const studentController = {
     );
 
     res.success(student, "Estudiante obtenido");
+  },
+
+  async update(req: Request, res: Response) {
+    const body = req.body as UpdateStudentBody;
+    const student = await studentService.updateStudentByCoach(
+      req.coach!.id,
+      req.params.id as string,
+      {
+        ...body,
+        gender: (body.gender as Gender | null | undefined) ?? undefined,
+      },
+    );
+
+    res.success(student, "Estudiante actualizado");
   },
 
   async deactivate(req: Request, res: Response) {

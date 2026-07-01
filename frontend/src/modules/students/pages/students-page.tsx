@@ -1,36 +1,34 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Users } from "lucide-react";
 import * as React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import {
   AddButton,
-  CfModal,
-  CfModalActions,
+  CardActions,
   CfSkeleton,
-  CfTabs,
+  ConfirmDialog,
   DataTable,
   DeleteDialog,
-  FormField,
-  FormSection,
   PageHeader,
   QueryState,
 } from "@/components/cf";
 import { Badge } from "@/components/ui/badge";
-import { Form } from "@/components/ui/form";
 import { formatDate } from "@/lib/format";
 import { getApiErrorMessage } from "@/lib/http/api-helpers";
 import { Gender } from "@/lib/types/entities";
-import type { Student } from "@/lib/types/entities";
+import type { StudentListItem } from "@/lib/types/entities";
 import { toast } from "@/lib/toast";
+
+import { CreateStudentModal } from "../components/create-student-modal";
+import { EditStudentModal } from "../components/edit-student-modal";
+import { StudentsDashboard } from "../components/students-dashboard";
 import {
-  useCreateStudentMutation,
+  useDeactivateStudentMutation,
   useDeleteStudentMutation,
 } from "../hooks/students/mutations";
 import { useStudentsQuery } from "../hooks/students/queries";
+import { useStudentsUrlState } from "../hooks/use-students-url-state";
 
 const genderLabels: Record<Gender, string> = {
   MALE: "Masculino",
@@ -38,116 +36,72 @@ const genderLabels: Record<Gender, string> = {
   OTHER: "Otro",
 };
 
-const createStudentSchema = z.object({
-  name: z.string().min(1, "El nombre es obligatorio"),
-  email: z.string().email("Ingresa un correo válido"),
-  phoneNumber: z.string().optional(),
-  birthday: z.string().optional(),
-  gender: z.nativeEnum(Gender).optional().nullable(),
-  observations: z.string().optional(),
-  medicalCondition: z.string().optional(),
-});
+function useDebouncedValue<T>(value: T, delayMs = 300) {
+  const [debouncedValue, setDebouncedValue] = React.useState(value);
 
-type CreateStudentFormValues = z.infer<typeof createStudentSchema>;
+  React.useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedValue(value), delayMs);
+    return () => window.clearTimeout(timeout);
+  }, [value, delayMs]);
 
-const defaultValues: CreateStudentFormValues = {
-  name: "",
-  email: "",
-  phoneNumber: "",
-  birthday: "",
-  gender: null,
-  observations: "",
-  medicalCondition: "",
-};
-
-function StudentsTable({
-  students,
-  onDelete,
-}: {
-  students: Student[];
-  onDelete: (student: Student) => void;
-}) {
-  return (
-    <DataTable<Student>
-      data={students}
-      searchKeys={["name", "email"]}
-      searchPlaceholder="Buscar alumnos..."
-      emptyMessage="No hay alumnos en esta sección"
-      getRowKey={(student) => student.id}
-      columns={[
-        { key: "name", header: "Nombre" },
-        { key: "email", header: "Correo" },
-        {
-          key: "birthday",
-          header: "Nacimiento",
-          render: (student) => formatDate(student.birthday),
-        },
-        {
-          key: "gender",
-          header: "Género",
-          render: (student) =>
-            student.gender ? genderLabels[student.gender] : "—",
-        },
-        {
-          key: "isActive",
-          header: "Estado",
-          render: (student) => (
-            <Badge variant={student.isActive ? "default" : "secondary"}>
-              {student.isActive ? "Activo" : "Inactivo"}
-            </Badge>
-          ),
-        },
-        {
-          key: "id",
-          header: "Acciones",
-          render: (student) => (
-            <button
-              type="button"
-              className="text-sm text-destructive hover:underline"
-              onClick={() => onDelete(student)}
-            >
-              Eliminar
-            </button>
-          ),
-        },
-      ]}
-    />
-  );
+  return debouncedValue;
 }
 
 export function StudentsPage() {
-  const [createOpen, setCreateOpen] = React.useState(false);
-  const [deleteTarget, setDeleteTarget] = React.useState<Student | null>(null);
+  const {
+    listParams,
+    statusFilter,
+    isCreateOpen,
+    isEditOpen,
+    editStudentId,
+    updateFilters,
+    openCreate,
+    openEdit,
+    closeAction,
+  } = useStudentsUrlState();
 
-  const studentsQuery = useStudentsQuery();
-  const createMutation = useCreateStudentMutation();
-  const deleteMutation = useDeleteStudentMutation();
+  const [searchInput, setSearchInput] = React.useState(listParams.search ?? "");
+  const [deleteTarget, setDeleteTarget] = React.useState<StudentListItem | null>(
+    null,
+  );
+  const [deactivateTarget, setDeactivateTarget] =
+    React.useState<StudentListItem | null>(null);
 
-  const form = useForm<CreateStudentFormValues>({
-    resolver: zodResolver(createStudentSchema),
-    defaultValues,
-  });
+  const debouncedSearch = useDebouncedValue(searchInput);
 
-  const handleCreate = form.handleSubmit(async (values) => {
-    try {
-      await createMutation.mutateAsync({
-        name: values.name,
-        email: values.email,
-        phoneNumber: values.phoneNumber || null,
-        birthday: values.birthday || null,
-        gender: values.gender ?? null,
-        observations: values.observations || null,
-        medicalCondition: values.medicalCondition || null,
-      });
-      toast.success("Alumno creado correctamente");
-      form.reset(defaultValues);
-      setCreateOpen(false);
-    } catch (error) {
-      toast.error("No se pudo crear el alumno", {
-        description: getApiErrorMessage(error),
-      });
+  React.useEffect(() => {
+    setSearchInput(listParams.search ?? "");
+  }, [listParams.search]);
+
+  React.useEffect(() => {
+    if (debouncedSearch !== (listParams.search ?? "")) {
+      updateFilters({ search: debouncedSearch || undefined, page: 1 });
     }
-  });
+  }, [debouncedSearch, listParams.search, updateFilters]);
+
+  const queryParams = React.useMemo(
+    () => ({
+      ...listParams,
+      search: debouncedSearch || undefined,
+    }),
+    [listParams, debouncedSearch],
+  );
+
+  const studentsQuery = useStudentsQuery(queryParams);
+  const deleteMutation = useDeleteStudentMutation();
+  const deactivateMutation = useDeactivateStudentMutation();
+
+  const handleSortChange = (sortBy: string) => {
+    const isSameColumn = listParams.sortBy === sortBy;
+    const nextOrder =
+      isSameColumn && listParams.sortOrder === "asc" ? "desc" : "asc";
+
+    updateFilters({
+      sortBy,
+      sortOrder: nextOrder,
+      page: 1,
+    });
+  };
 
   const handleDelete = async () => {
     if (!deleteTarget) {
@@ -165,168 +119,187 @@ export function StudentsPage() {
     }
   };
 
+  const handleDeactivate = async () => {
+    if (!deactivateTarget) {
+      return;
+    }
+
+    try {
+      await deactivateMutation.mutateAsync(deactivateTarget.id);
+      toast.success("Alumno inactivado correctamente");
+      setDeactivateTarget(null);
+    } catch (error) {
+      toast.error("No se pudo inactivar al alumno", {
+        description: getApiErrorMessage(error),
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Alumnos"
         subtitle="Gestiona tus estudiantes y su información"
         icon={Users}
-        actions={
-          <AddButton
-            label="Agregar alumno"
-            onClick={() => setCreateOpen(true)}
-          />
-        }
+        actions={<AddButton label="Agregar alumno" onClick={openCreate} />}
       />
+
+      <StudentsDashboard />
 
       <QueryState
         query={studentsQuery}
         skeleton={<CfSkeleton variant="table" rows={6} />}
-        isEmpty={(data) => data.length === 0}
+        isEmpty={(data) => data.meta.total === 0}
+        errorTitle="No pudimos cargar los alumnos. Intenta de nuevo."
         empty={
-          <CfTabs
-            tabs={[
+          <DataTable<StudentListItem>
+            mode="server"
+            data={[]}
+            columns={[
+              { key: "name", header: "Nombre", sortable: true },
+              { key: "email", header: "Correo", sortable: true },
+            ]}
+            searchValue={searchInput}
+            onSearchChange={setSearchInput}
+            searchPlaceholder="Buscar alumnos..."
+            statusFilter={statusFilter}
+            onStatusFilterChange={(value) => updateFilters({ statusFilter: value })}
+            sorting={{
+              sortBy: listParams.sortBy,
+              sortOrder: listParams.sortOrder,
+              onSortChange: handleSortChange,
+            }}
+            pagination={{
+              meta: {
+                page: listParams.page ?? 1,
+                pageSize: listParams.pageSize ?? 10,
+                total: 0,
+                totalPages: 0,
+              },
+              onPageChange: (page) => updateFilters({ page }),
+              onPageSizeChange: (pageSize) =>
+                updateFilters({ pageSize, page: 1 }),
+            }}
+            emptyMessage="No hay alumnos registrados"
+          />
+        }
+      >
+        {(data) => (
+          <DataTable<StudentListItem>
+            mode="server"
+            data={data.items}
+            searchValue={searchInput}
+            onSearchChange={setSearchInput}
+            searchPlaceholder="Buscar alumnos..."
+            statusFilter={statusFilter}
+            onStatusFilterChange={(value) => updateFilters({ statusFilter: value })}
+            sorting={{
+              sortBy: listParams.sortBy,
+              sortOrder: listParams.sortOrder,
+              onSortChange: handleSortChange,
+            }}
+            pagination={{
+              meta: data.meta,
+              onPageChange: (page) => updateFilters({ page }),
+              onPageSizeChange: (pageSize) =>
+                updateFilters({ pageSize, page: 1 }),
+            }}
+            emptyMessage="No hay alumnos registrados"
+            getRowKey={(student) => student.id}
+            columns={[
+              { key: "name", header: "Nombre", sortable: true },
+              { key: "email", header: "Correo", sortable: true },
               {
-                value: "active",
-                label: "Activos",
-                content: (
-                  <DataTable<Student>
-                    data={[]}
-                    searchKeys={["name", "email"]}
-                    emptyMessage="No hay alumnos registrados"
-                    columns={[
-                      { key: "name", header: "Nombre" },
-                      { key: "email", header: "Correo" },
-                    ]}
-                  />
+                key: "activePlan",
+                header: "Plan activo",
+                render: (student) => student.activePlan?.name ?? "—",
+              },
+              {
+                key: "birthday",
+                header: "Nacimiento",
+                sortable: true,
+                render: (student) => formatDate(student.birthday),
+              },
+              {
+                key: "gender",
+                header: "Género",
+                render: (student) =>
+                  student.gender ? genderLabels[student.gender] : "—",
+              },
+              {
+                key: "isActive",
+                header: "Estado",
+                sortable: true,
+                render: (student) => (
+                  <Badge variant={student.isActive ? "default" : "secondary"}>
+                    {student.isActive ? "Activo" : "Inactivo"}
+                  </Badge>
                 ),
               },
               {
-                value: "inactive",
-                label: "Inactivos",
-                content: (
-                  <DataTable<Student>
-                    data={[]}
-                    searchKeys={["name", "email"]}
-                    emptyMessage="No hay alumnos inactivos"
-                    columns={[
-                      { key: "name", header: "Nombre" },
-                      { key: "email", header: "Correo" },
+                key: "id",
+                header: "Acciones",
+                render: (student) => (
+                  <CardActions
+                    actions={[
+                      {
+                        variant: "edit",
+                        onClick: () => openEdit(student.id),
+                      },
+                      ...(student.isActive
+                        ? [
+                            {
+                              variant: "custom" as const,
+                              label: "Inactivar",
+                              onClick: () => setDeactivateTarget(student),
+                            },
+                          ]
+                        : []),
+                      {
+                        variant: "delete",
+                        onClick: () => setDeleteTarget(student),
+                      },
                     ]}
                   />
                 ),
               },
             ]}
           />
-        }
-      >
-        {(students) => {
-          const activeStudents = students.filter((student) => student.isActive);
-          const inactiveStudents = students.filter((student) => !student.isActive);
-
-          return (
-            <CfTabs
-              tabs={[
-                {
-                  value: "active",
-                  label: `Activos (${activeStudents.length})`,
-                  content: (
-                    <StudentsTable
-                      students={activeStudents}
-                      onDelete={setDeleteTarget}
-                    />
-                  ),
-                },
-                {
-                  value: "inactive",
-                  label: `Inactivos (${inactiveStudents.length})`,
-                  content: (
-                    <StudentsTable
-                      students={inactiveStudents}
-                      onDelete={setDeleteTarget}
-                    />
-                  ),
-                },
-              ]}
-            />
-          );
-        }}
+        )}
       </QueryState>
 
-      <CfModal
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        title="Nuevo alumno"
-        description="Completa los datos para invitar a un nuevo estudiante."
-        size="lg"
-        loading={createMutation.isPending}
-        footer={
-          <CfModalActions
-            onCancel={() => setCreateOpen(false)}
-            onConfirm={handleCreate}
-            confirmLabel="Crear alumno"
-            loading={createMutation.isPending}
-          />
-        }
-      >
-        <Form {...form}>
-          <form className="space-y-4" onSubmit={handleCreate}>
-            <FormSection title="Datos personales">
-              <FormField
-                control={form.control}
-                name="name"
-                label="Nombre completo"
-                type="text"
-                required
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                label="Correo electrónico"
-                type="email"
-                required
-              />
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                label="Teléfono"
-                type="tel"
-              />
-              <FormField
-                control={form.control}
-                name="birthday"
-                label="Fecha de nacimiento"
-                type="date"
-              />
-              <FormField
-                control={form.control}
-                name="gender"
-                label="Género"
-                type="select"
-                options={[
-                  { label: "Masculino", value: Gender.MALE },
-                  { label: "Femenino", value: Gender.FEMALE },
-                  { label: "Otro", value: Gender.OTHER },
-                ]}
-              />
-            </FormSection>
-            <FormSection title="Información adicional">
-              <FormField
-                control={form.control}
-                name="observations"
-                label="Observaciones"
-                type="textarea"
-              />
-              <FormField
-                control={form.control}
-                name="medicalCondition"
-                label="Condición médica"
-                type="textarea"
-              />
-            </FormSection>
-          </form>
-        </Form>
-      </CfModal>
+      <CreateStudentModal
+        open={isCreateOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeAction();
+          }
+        }}
+        onSuccess={closeAction}
+      />
+
+      {editStudentId ? (
+        <EditStudentModal
+          open={isEditOpen}
+          studentId={editStudentId}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeAction();
+            }
+          }}
+          onSuccess={closeAction}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        open={Boolean(deactivateTarget)}
+        onOpenChange={(open) => !open && setDeactivateTarget(null)}
+        title={`¿Inactivar a ${deactivateTarget?.name}?`}
+        description="Ya no podrá acceder a la plataforma."
+        confirmLabel="Inactivar"
+        onConfirm={handleDeactivate}
+        loading={deactivateMutation.isPending}
+      />
 
       <DeleteDialog
         open={Boolean(deleteTarget)}

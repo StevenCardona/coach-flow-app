@@ -12,7 +12,6 @@ import { Plan } from "../../modules/plans/models/plan.model";
 import { StudentPlanHistory } from "../../modules/plans/models/student-plan-history.model";
 import { BodyMeasurement } from "../../modules/students/models/body-measurement.model";
 import { FitnessGoal } from "../../modules/students/models/fitness-goal.model";
-import { Invitation } from "../../modules/students/models/invitation.model";
 import { Student } from "../../modules/students/models/student.model";
 import { ExerciseLog } from "../../modules/workouts/models/exercise-log.model";
 import { WorkoutDayExercise } from "../../modules/workouts/models/workout-day-exercise.model";
@@ -38,7 +37,6 @@ export const setupAssociations = () => {
   // Coach
   Coach.belongsTo(User, { foreignKey: "user_id", as: "user" });
   Coach.hasMany(Plan, { foreignKey: "coach_id", as: "plans" });
-  Coach.hasMany(Invitation, { foreignKey: "coach_id", as: "invitations" });
   Coach.hasMany(Student, { foreignKey: "coach_id", as: "students" });
   Coach.hasMany(WorkoutPlan, { foreignKey: "coach_id", as: "workoutPlans" });
   Coach.hasMany(NutritionalPlan, {
@@ -51,9 +49,6 @@ export const setupAssociations = () => {
     foreignKey: "plan_id",
     as: "studentHistories",
   });
-
-  Invitation.belongsTo(Coach, { foreignKey: "coach_id", as: "coach" });
-  Invitation.belongsTo(Student, { foreignKey: "student_id", as: "student" });
 
   Student.belongsTo(User, { foreignKey: "user_id", as: "user" });
   Student.belongsTo(Coach, { foreignKey: "coach_id", as: "coach" });

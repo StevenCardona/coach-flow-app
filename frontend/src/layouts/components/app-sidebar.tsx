@@ -7,11 +7,13 @@ import { useEffect } from "react";
 
 import {
   bottomNavItems,
-  mainNavItems,
+  getMainNavItemsForRole,
   type NavItem,
 } from "@/layouts/config/navigation";
+import { CfSkeleton } from "@/components/cf";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/stores/app-context";
+import { useAuthUser } from "@/modules/auth/hooks/use-auth-user";
 import { cn } from "@/lib/utils";
 
 import { AppLogo } from "./app-logo";
@@ -66,6 +68,10 @@ function NavLink({
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isLoading, user } = useAuthUser();
+  const mainNavItems = user
+    ? getMainNavItemsForRole(user.role)
+    : [];
   const {
     isSidebarOpen,
     isSidebarCollapsed,
@@ -82,6 +88,14 @@ export function AppSidebar() {
 
   const collapsed = isSidebarCollapsed && !isMobile;
   const showOverlay = isMobile && isSidebarOpen;
+
+  if (isLoading || !user) {
+    return (
+      <aside className="hidden w-60 shrink-0 border-r border-white/10 bg-cf-navy p-3 lg:block">
+        <CfSkeleton className="h-full min-h-[12rem] w-full bg-white/10" />
+      </aside>
+    );
+  }
 
   return (
     <>

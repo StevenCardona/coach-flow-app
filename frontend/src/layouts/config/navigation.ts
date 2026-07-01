@@ -7,6 +7,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { Role, type Role as RoleType } from "@/lib/types/entities";
+
 export type NavItemVariant = "default" | "profile";
 
 export interface NavItem {
@@ -16,11 +18,15 @@ export interface NavItem {
   variant?: NavItemVariant;
 }
 
-export const mainNavItems: NavItem[] = [
+export const coachMainNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/students", label: "Alumnos", icon: Users },
   { href: "/routines", label: "Rutinas", icon: Dumbbell },
   { href: "/nutrition", label: "Nutrición", icon: UtensilsCrossed },
+];
+
+export const studentMainNavItems: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
 export const bottomNavItems: NavItem[] = [
@@ -32,7 +38,20 @@ export const bottomNavItems: NavItem[] = [
   },
 ];
 
-export const allNavItems: NavItem[] = [...mainNavItems, ...bottomNavItems];
+/** @deprecated Use getNavItemsForRole instead */
+export const mainNavItems = coachMainNavItems;
+
+export function getMainNavItemsForRole(role: RoleType): NavItem[] {
+  return role === Role.STUDENT ? studentMainNavItems : coachMainNavItems;
+}
+
+export function getNavItemsForRole(role: RoleType): NavItem[] {
+  return [...getMainNavItemsForRole(role), ...bottomNavItems];
+}
+
+export const coachOnlyRoutePrefixes = ["/students", "/routines", "/nutrition"];
+
+export const allNavItems: NavItem[] = [...coachMainNavItems, ...bottomNavItems];
 
 export const routeLabels: Record<string, string> = {
   "/dashboard": "Dashboard",

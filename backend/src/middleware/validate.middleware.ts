@@ -16,6 +16,11 @@ export const validate =
       return next(new AppError(400, `Datos inválidos: ${messages.join(", ")}`));
     }
 
-    req[source] = result.data;
+    if (source === "query") {
+      req.validated = { ...req.validated, query: result.data };
+    } else {
+      req[source] = result.data;
+    }
+
     next();
   };

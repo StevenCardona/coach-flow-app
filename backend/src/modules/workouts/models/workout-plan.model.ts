@@ -40,7 +40,6 @@ WorkoutPlan.init(
       type: DataTypes.UUID,
       allowNull: false,
       field: "coach_id",
-      references: { model: "coaches", key: "id" },
     },
     name: {
       type: DataTypes.STRING,

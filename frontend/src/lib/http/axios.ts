@@ -1,5 +1,7 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 
+import { clearAccessToken, getAccessToken } from "@/lib/auth/token-storage";
+
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5500/api",
   headers: {
@@ -7,29 +9,31 @@ export const api = axios.create({
   },
 });
 
-type GetToken = () => Promise<string | null>;
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = getAccessToken();
 
-let authInterceptorId: number | null = null;
-
-export function setupAxiosAuth(getToken: GetToken) {
-  if (authInterceptorId !== null) {
-    api.interceptors.request.eject(authInterceptorId);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
-  authInterceptorId = api.interceptors.request.use(
-    async (config: InternalAxiosRequestConfig) => {
-      const token = await getToken();
-
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-
-      return config;
-    },
-  );
-}
+  return config;
+});
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error),
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      const pathname = window.location.pathname;
+      const isAuthPage =
+        pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
+
+      if (!isAuthPage) {
+        clearAccessToken();
+        const redirectUrl = encodeURIComponent(pathname);
+        window.location.href = `/sign-in?redirect_url=${redirectUrl}`;
+      }
+    }
+
+    return Promise.reject(error);
+  },
 );

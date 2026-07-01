@@ -1,13 +1,13 @@
-import type { Coach, Student, User } from "@/lib/types/entities";
+import type { User } from "@/lib/types/entities";
 
-export interface RegisterCoachResponse {
+export interface AuthSessionResponse {
   user: User;
-  coach: Coach;
+  token: string;
+  mustChangePassword: boolean;
 }
 
-export interface RegisterStudentResponse {
+export interface ChangePasswordResponse {
   user: User;
-  student: Student;
+  token: string;
+  mustChangePassword: boolean;
 }
-
-export type RegisterResponse = RegisterCoachResponse | RegisterStudentResponse;

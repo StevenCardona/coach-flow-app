@@ -1,8 +1,19 @@
-@baseUrl = http://localhost:5500
-@coachToken = <pegar_token_de_sesion_clerk_del_coach>
+@baseUrl = http://localhost:5500/api
+@token = {{login.response.body.data.token}}
 
-POST {{baseUrl}}/api/plans
-Authorization: Bearer {{coachToken}}
+### Login coach
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "coach@ejemplo.com",
+  "password": "password123"
+}
+
+### Create plan
+POST {{baseUrl}}/plans
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
