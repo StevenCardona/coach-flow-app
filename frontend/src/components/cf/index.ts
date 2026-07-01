@@ -25,6 +25,8 @@ export type { QueryStateProps } from "./feedback/query-state";
 export { CfSkeleton } from "./feedback/skeleton";
 export type { CfSkeletonProps, CfSkeletonVariant } from "./feedback/skeleton";
 
+export { CurrencyInput } from "./forms/currency-input";
+export type { CurrencyInputProps } from "./forms/currency-input";
 export { FormField, StandaloneFormField } from "./forms/form-field";
 export type { FormFieldOption, FormFieldProps, FormFieldType, StandaloneFormFieldProps } from "./forms/form-field";
 export { FormFieldGroup } from "./forms/form-field-group";

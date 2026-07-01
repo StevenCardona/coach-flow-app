@@ -56,6 +56,8 @@ export interface StudentListItem {
   activePlan: StudentListItemActivePlan | null;
 }
 
+export type StudentDetail = StudentListItem;
+
 export interface StudentsStats {
   total: number;
   active: number;

@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 export interface DataTableColumn<T> {
   key: keyof T | string;
-  header: string;
+  header?: string;
   render?: (row: T) => React.ReactNode;
   className?: string;
   sortable?: boolean;
@@ -208,18 +208,20 @@ export function DataTable<T extends object>({
                       key={columnKey}
                       className={column.className}
                     >
-                      {isSortable ? (
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-1 hover:text-foreground"
-                          onClick={() => sorting!.onSortChange(columnKey)}
-                        >
-                          {column.header}
-                          {renderSortIcon(columnKey)}
-                        </button>
-                      ) : (
-                        column.header
-                      )}
+                      {column.header ? (
+                        isSortable ? (
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 hover:text-foreground"
+                            onClick={() => sorting!.onSortChange(columnKey)}
+                          >
+                            {column.header}
+                            {renderSortIcon(columnKey)}
+                          </button>
+                        ) : (
+                          column.header
+                        )
+                      ) : null}
                     </TableHead>
                   );
                 })}

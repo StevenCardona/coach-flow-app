@@ -24,18 +24,27 @@ export function sanitizeRedirectUrl(url: string | null | undefined): string | nu
   return trimmed;
 }
 
-export function getDefaultHomeForRole(role: RoleType): string {
-  return role === Role.STUDENT ? "/dashboard" : "/dashboard";
+export function getDefaultHomeForRole(
+  role: RoleType,
+  onboardingCompleted = true,
+): string {
+  if (role === Role.STUDENT && !onboardingCompleted) {
+    return "/onboarding";
+  }
+
+  return "/dashboard";
 }
 
 export function resolvePostAuthPath({
   role,
   mustChangePassword,
   redirectUrl,
+  onboardingCompleted = true,
 }: {
   role: RoleType;
   mustChangePassword: boolean;
   redirectUrl?: string | null;
+  onboardingCompleted?: boolean;
 }): string {
   if (mustChangePassword) {
     return "/change-password";
@@ -44,8 +53,14 @@ export function resolvePostAuthPath({
   const sanitized = sanitizeRedirectUrl(redirectUrl);
 
   if (sanitized) {
-    return sanitized === "/" ? getDefaultHomeForRole(role) : sanitized;
+    if (role === Role.STUDENT && !onboardingCompleted) {
+      return "/onboarding";
+    }
+
+    return sanitized === "/"
+      ? getDefaultHomeForRole(role, onboardingCompleted)
+      : sanitized;
   }
 
-  return getDefaultHomeForRole(role);
+  return getDefaultHomeForRole(role, onboardingCompleted);
 }

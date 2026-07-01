@@ -1,11 +1,8 @@
 import { AppError } from "../../../types/error";
+import type { PaginationQuery } from "../../../types/pagination.types";
 import { planRepository } from "../repositories/plan.repository";
 import type { UpdatePlanBody } from "../helpers/plan.validation";
-import type {
-  CreatePlanInput,
-  ListPlansFilters,
-  UpdatePlanInput,
-} from "../types/plan.types";
+import type { CreatePlanInput, UpdatePlanInput } from "../types/plan.types";
 
 export const planService = {
   createPlan(coachId: string, input: Omit<CreatePlanInput, "coachId">) {
@@ -16,8 +13,8 @@ export const planService = {
     });
   },
 
-  listByCoach(coachId: string, filters?: ListPlansFilters) {
-    return planRepository.findByCoachId(coachId, filters);
+  listByCoach(coachId: string, query: PaginationQuery) {
+    return planRepository.findPaginatedByCoachId(coachId, query);
   },
 
   async getByCoachAndId(coachId: string, planId: string) {

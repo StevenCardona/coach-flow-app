@@ -10,7 +10,7 @@ import type {
   CreateStudentResponse,
   DeactivateStudentResponse,
   DeleteStudentResponse,
-  Student,
+  StudentDetail,
   StudentListItem,
   StudentsStats,
   UpdateStudentResponse,
@@ -40,7 +40,7 @@ export async function getStudentsStats() {
 }
 
 export async function getStudentById(id: string) {
-  return unwrapResponse(api.get<ApiResponse<Student>>(`/students/${id}`));
+  return unwrapResponse(api.get<ApiResponse<StudentDetail>>(`/students/${id}`));
 }
 
 export async function updateStudent(id: string, body: UpdateStudentRequest) {

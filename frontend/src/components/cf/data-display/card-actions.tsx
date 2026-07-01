@@ -22,6 +22,7 @@ export interface CardActionButtonProps {
   variant: CardActionVariant;
   label?: string;
   icon?: React.ReactNode;
+  iconOnly?: boolean;
   onClick?: () => void;
   disabled?: boolean;
   loading?: boolean;
@@ -31,6 +32,7 @@ export function CardActionButton({
   variant,
   label,
   icon,
+  iconOnly,
   onClick,
   disabled,
   loading,
@@ -44,13 +46,17 @@ export function CardActionButton({
     <Button
       type="button"
       variant={variant === "delete" ? "ghost" : "ghost"}
-      size="sm"
+      size={iconOnly ? "icon" : "sm"}
       onClick={onClick}
       disabled={disabled || loading}
-      className={cn(variant === "delete" && "text-destructive hover:text-destructive")}
+      aria-label={iconOnly ? resolvedLabel : undefined}
+      className={cn(
+        iconOnly && "size-8",
+        variant === "delete" && "text-destructive hover:text-destructive",
+      )}
     >
       {resolvedIcon}
-      {resolvedLabel}
+      {!iconOnly ? resolvedLabel : null}
     </Button>
   );
 }

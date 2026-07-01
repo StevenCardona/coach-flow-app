@@ -18,9 +18,11 @@ import {
 import { Form } from "@/components/ui/form";
 import { resolvePostAuthPath } from "@/lib/auth/post-auth-redirect";
 import { getApiErrorMessage } from "@/lib/http/api-helpers";
+import { Role } from "@/lib/types/entities";
 import { toast } from "@/lib/toast";
 import { useAuthContext } from "@/providers/auth-provider";
 
+import { getCurrentUser } from "../apis/me";
 import { useLoginMutation } from "../hooks/mutations";
 
 const signInSchema = z.object({
@@ -45,14 +47,26 @@ export function SignInForm() {
 
   const onSubmit = (values: SignInFormValues) => {
     loginMutation.mutate(values, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         setSessionToken(data.token);
         toast.success("Bienvenido de nuevo");
+
+        let onboardingCompleted = true;
+
+        if (data.user.role === Role.STUDENT) {
+          try {
+            const me = await getCurrentUser();
+            onboardingCompleted = me.student?.onboardingCompleted ?? false;
+          } catch {
+            onboardingCompleted = false;
+          }
+        }
 
         const path = resolvePostAuthPath({
           role: data.user.role,
           mustChangePassword: data.mustChangePassword,
           redirectUrl: searchParams.get("redirect_url"),
+          onboardingCompleted,
         });
 
         window.location.assign(path);

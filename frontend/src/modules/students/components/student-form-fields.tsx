@@ -2,23 +2,32 @@
 
 import type { Control, FieldValues } from "react-hook-form";
 
-import { FormField, FormSection, StandaloneFormField } from "@/components/cf";
+import { FormField, StandaloneFormField } from "@/components/cf";
+import { PlanSelector } from "@/modules/coach/plans";
 import { Gender } from "@/lib/types/entities";
 
-interface StudentFormFieldsProps<TFieldValues extends FieldValues> {
+interface StudentFieldsProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
   mode: "create" | "edit";
   email?: string;
+  planId?: string | null;
+  onPlanIdChange?: (planId: string | null) => void;
+  selectedPlanLabel?: string | null;
+  planError?: string;
 }
 
-export function StudentFormFields<TFieldValues extends FieldValues>({
+export function StudentPersonalFields<TFieldValues extends FieldValues>({
   control,
   mode,
   email,
-}: StudentFormFieldsProps<TFieldValues>) {
+  planId,
+  onPlanIdChange,
+  selectedPlanLabel,
+  planError,
+}: StudentFieldsProps<TFieldValues>) {
   return (
-    <>
-      <FormSection title="Datos personales">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField
           control={control}
           name={"name" as never}
@@ -26,24 +35,37 @@ export function StudentFormFields<TFieldValues extends FieldValues>({
           type="text"
           required
         />
-        {mode === "create" ? (
-          <FormField
-            control={control}
-            name={"email" as never}
-            label="Correo electrónico"
-            type="email"
-            required
+        {onPlanIdChange ? (
+          <PlanSelector
+            value={planId ?? null}
+            onValueChange={onPlanIdChange}
+            label="Plan"
+            selectedPlanLabel={selectedPlanLabel}
+            error={planError}
           />
-        ) : (
-          <StandaloneFormField
-            id="student-email-readonly"
-            label="Correo electrónico"
-            type="email"
-            value={email ?? ""}
-            disabled
-            description="El correo no se puede cambiar después de crear el alumno."
-          />
-        )}
+        ) : null}
+      </div>
+
+      {mode === "create" ? (
+        <FormField
+          control={control}
+          name={"email" as never}
+          label="Correo electrónico"
+          type="email"
+          required
+        />
+      ) : (
+        <StandaloneFormField
+          id="student-email-readonly"
+          label="Correo electrónico"
+          type="email"
+          value={email ?? ""}
+          disabled
+          description="El correo no se puede cambiar después de crear el alumno."
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <FormField
           control={control}
           name={"phoneNumber" as never}
@@ -67,21 +89,54 @@ export function StudentFormFields<TFieldValues extends FieldValues>({
             { label: "Otro", value: Gender.OTHER },
           ]}
         />
-      </FormSection>
-      <FormSection title="Información adicional">
-        <FormField
-          control={control}
-          name={"observations" as never}
-          label="Observaciones"
-          type="textarea"
-        />
-        <FormField
-          control={control}
-          name={"medicalCondition" as never}
-          label="Condición médica"
-          type="textarea"
-        />
-      </FormSection>
+      </div>
+    </div>
+  );
+}
+
+export function StudentAdditionalFields<TFieldValues extends FieldValues>({
+  control,
+}: Pick<StudentFieldsProps<TFieldValues>, "control">) {
+  return (
+    <div className="space-y-4">
+      <FormField
+        control={control}
+        name={"observations" as never}
+        label="Observaciones"
+        type="textarea"
+      />
+      <FormField
+        control={control}
+        name={"medicalCondition" as never}
+        label="Condición médica"
+        type="textarea"
+      />
+    </div>
+  );
+}
+
+/** @deprecated Use StudentPersonalFields and StudentAdditionalFields with CfTabs in modals */
+export function StudentFormFields<TFieldValues extends FieldValues>({
+  control,
+  mode,
+  email,
+  planId,
+  onPlanIdChange,
+  selectedPlanLabel,
+  planError,
+}: StudentFieldsProps<TFieldValues>) {
+  return (
+    <>
+      <StudentPersonalFields
+        control={control}
+        mode={mode}
+        email={email}
+        planId={planId}
+        onPlanIdChange={onPlanIdChange}
+        selectedPlanLabel={selectedPlanLabel}
+        planError={planError}
+      />
+      <StudentAdditionalFields control={control} />
     </>
   );
 }

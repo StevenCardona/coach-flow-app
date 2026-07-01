@@ -47,6 +47,8 @@ app.get(
         ...req.user!.toJSON(),
         coachId: req.coach?.id ?? null,
         studentId: req.student?.id ?? null,
+        coach: req.coach?.toJSON() ?? null,
+        student: req.student?.toJSON() ?? null,
       },
       "Usuario obtenido",
     );

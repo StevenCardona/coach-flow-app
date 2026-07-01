@@ -1,11 +1,11 @@
-import type { Student } from "@/lib/types/entities";
+import type { StudentDetail } from "@/lib/types/entities";
 
 import type {
   CreateStudentFormValues,
   EditStudentFormValues,
 } from "../schemas/student-form.schema";
 
-export function mapStudentToEditFormValues(student: Student): EditStudentFormValues {
+export function mapStudentToEditFormValues(student: StudentDetail): EditStudentFormValues {
   return {
     name: student.name,
     phoneNumber: student.phoneNumber ?? "",
@@ -13,6 +13,7 @@ export function mapStudentToEditFormValues(student: Student): EditStudentFormVal
     gender: student.gender,
     observations: student.observations ?? "",
     medicalCondition: student.medicalCondition ?? "",
+    planId: student.activePlan?.id ?? null,
   };
 }
 

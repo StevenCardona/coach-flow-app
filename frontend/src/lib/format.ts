@@ -1,4 +1,5 @@
 import {
+  differenceInYears,
   format,
   formatDistanceToNow,
   isValid,
@@ -60,6 +61,16 @@ export function formatRelative(
   }
 
   return formatDistanceToNow(date, { addSuffix: true, locale });
+}
+
+export function calculateAge(value: DateInput): string {
+  const date = toDate(value);
+  if (!date) {
+    return "—";
+  }
+
+  const years = differenceInYears(new Date(), date);
+  return years >= 0 ? String(years) : "—";
 }
 
 export function formatCurrency(

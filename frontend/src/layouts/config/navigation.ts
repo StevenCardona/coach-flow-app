@@ -49,7 +49,12 @@ export function getNavItemsForRole(role: RoleType): NavItem[] {
   return [...getMainNavItemsForRole(role), ...bottomNavItems];
 }
 
-export const coachOnlyRoutePrefixes = ["/students", "/routines", "/nutrition"];
+export const coachOnlyRoutePrefixes = [
+  "/students",
+  "/routines",
+  "/nutrition",
+  "/profile/plans",
+];
 
 export const allNavItems: NavItem[] = [...coachMainNavItems, ...bottomNavItems];
 
@@ -59,4 +64,6 @@ export const routeLabels: Record<string, string> = {
   "/routines": "Rutinas",
   "/nutrition": "Nutrición",
   "/profile": "Perfil",
+  "/profile/plans": "Planes",
+  "/profile/plans/new": "Crear plan",
 };

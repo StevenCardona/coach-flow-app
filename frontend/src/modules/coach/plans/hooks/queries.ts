@@ -1,17 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
+import type { PaginationParams } from "@/lib/types/pagination.types";
 
 import { getPlanById, getPlans } from "../apis/plans";
 import { planKeys } from "./keys";
 
 export function usePlansQuery(
-  filters?: { active?: boolean },
+  params?: PaginationParams,
   options?: { enabled?: boolean },
 ) {
   return useQuery({
-    queryKey: planKeys.list(filters),
-    queryFn: () => getPlans(filters),
+    queryKey: planKeys.list(params),
+    queryFn: () => getPlans(params),
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   });
 }

@@ -4,14 +4,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 
-import { CfModal, CfModalActions } from "@/components/cf";
+import { CfModal, CfModalActions, CfTabs } from "@/components/cf";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { getTodayDateString } from "@/lib/date";
 import { getApiErrorMessage } from "@/lib/http/api-helpers";
 import type { CreateStudentResponse } from "@/lib/types/entities";
 import { toast } from "@/lib/toast";
 
-import { StudentFormFields } from "./student-form-fields";
+import {
+  StudentAdditionalFields,
+  StudentPersonalFields,
+} from "./student-form-fields";
+import { useAssignPlanMutation } from "../hooks/plan-histories/mutations";
 import { useCreateStudentMutation } from "../hooks/students/mutations";
 import {
   createStudentDefaultValues,
@@ -32,6 +37,7 @@ export function CreateStudentModal({
   onSuccess,
 }: CreateStudentModalProps) {
   const createMutation = useCreateStudentMutation();
+  const assignPlanMutation = useAssignPlanMutation();
   const [createdStudent, setCreatedStudent] =
     React.useState<CreateStudentResponse | null>(null);
 
@@ -49,7 +55,20 @@ export function CreateStudentModal({
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
-      const result = await createMutation.mutateAsync(mapCreateFormToRequest(values));
+      const result = await createMutation.mutateAsync(
+        mapCreateFormToRequest(values),
+      );
+
+      if (values.planId) {
+        await assignPlanMutation.mutateAsync({
+          studentId: result.student.id,
+          body: {
+            planId: values.planId,
+            startDate: getTodayDateString(),
+          },
+        });
+      }
+
       setCreatedStudent(result);
       toast.success("Alumno creado correctamente", {
         description: result.credentials.message,
@@ -66,6 +85,8 @@ export function CreateStudentModal({
     onOpenChange(false);
     setCreatedStudent(null);
   };
+
+  const planId = form.watch("planId");
 
   return (
     <CfModal
@@ -84,7 +105,7 @@ export function CreateStudentModal({
           : "Completa los datos para registrar un nuevo estudiante."
       }
       size="lg"
-      loading={createMutation.isPending}
+      loading={createMutation.isPending || assignPlanMutation.isPending}
       footer={
         createdStudent ? (
           <Button type="button" onClick={handleClose}>
@@ -95,7 +116,7 @@ export function CreateStudentModal({
             onCancel={handleClose}
             onConfirm={handleSubmit}
             confirmLabel="Crear alumno"
-            loading={createMutation.isPending}
+            loading={createMutation.isPending || assignPlanMutation.isPending}
           />
         )
       }
@@ -115,7 +136,31 @@ export function CreateStudentModal({
       ) : (
         <Form {...form}>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <StudentFormFields control={form.control} mode="create" />
+            <CfTabs
+              tabs={[
+                {
+                  value: "personal",
+                  label: "Datos personales",
+                  content: (
+                    <StudentPersonalFields
+                      control={form.control}
+                      mode="create"
+                      planId={planId}
+                      onPlanIdChange={(nextPlanId) =>
+                        form.setValue("planId", nextPlanId, {
+                          shouldDirty: true,
+                        })
+                      }
+                    />
+                  ),
+                },
+                {
+                  value: "additional",
+                  label: "Información adicional",
+                  content: <StudentAdditionalFields control={form.control} />,
+                },
+              ]}
+            />
           </form>
         </Form>
       )}

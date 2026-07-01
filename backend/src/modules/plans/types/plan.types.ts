@@ -16,6 +16,3 @@ export interface UpdatePlanInput {
   isActive?: boolean;
 }
 
-export interface ListPlansFilters {
-  activeOnly?: boolean;
-}

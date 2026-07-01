@@ -22,7 +22,17 @@ import type {
   UpdateFitnessGoalRequest,
   UpdatePersonalInfoRequest,
 } from "../types/requests";
+import { authKeys } from "@/modules/auth/hooks/keys";
+
 import { onboardingKeys } from "./keys";
+
+function invalidateOnboardingQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  phaseKey: readonly unknown[],
+) {
+  queryClient.invalidateQueries({ queryKey: phaseKey });
+  queryClient.invalidateQueries({ queryKey: authKeys.me() });
+}
 
 export function useCreatePersonalInfoMutation() {
   const queryClient = useQueryClient();
@@ -30,9 +40,10 @@ export function useCreatePersonalInfoMutation() {
   return useMutation({
     mutationFn: (body: CreatePersonalInfoRequest) => createPersonalInfo(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: onboardingKeys.personalInfo(),
-      });
+      invalidateOnboardingQueries(
+        queryClient,
+        onboardingKeys.personalInfo(),
+      );
     },
   });
 }
@@ -43,9 +54,10 @@ export function useUpdatePersonalInfoMutation() {
   return useMutation({
     mutationFn: (body: UpdatePersonalInfoRequest) => updatePersonalInfo(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: onboardingKeys.personalInfo(),
-      });
+      invalidateOnboardingQueries(
+        queryClient,
+        onboardingKeys.personalInfo(),
+      );
     },
   });
 }
@@ -57,9 +69,10 @@ export function useCreateBodyMeasurementMutation() {
     mutationFn: (body: CreateBodyMeasurementRequest) =>
       createBodyMeasurement(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: onboardingKeys.bodyMeasurements(),
-      });
+      invalidateOnboardingQueries(
+        queryClient,
+        onboardingKeys.bodyMeasurements(),
+      );
     },
   });
 }
@@ -76,9 +89,10 @@ export function useUpdateBodyMeasurementMutation() {
       body: UpdateBodyMeasurementRequest;
     }) => updateBodyMeasurement(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: onboardingKeys.bodyMeasurements(),
-      });
+      invalidateOnboardingQueries(
+        queryClient,
+        onboardingKeys.bodyMeasurements(),
+      );
     },
   });
 }
@@ -89,9 +103,7 @@ export function useCreateFitnessGoalMutation() {
   return useMutation({
     mutationFn: (body: CreateFitnessGoalRequest) => createFitnessGoal(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: onboardingKeys.fitnessGoal(),
-      });
+      invalidateOnboardingQueries(queryClient, onboardingKeys.fitnessGoal());
     },
   });
 }
@@ -102,9 +114,7 @@ export function useUpdateFitnessGoalMutation() {
   return useMutation({
     mutationFn: (body: UpdateFitnessGoalRequest) => updateFitnessGoal(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: onboardingKeys.fitnessGoal(),
-      });
+      invalidateOnboardingQueries(queryClient, onboardingKeys.fitnessGoal());
     },
   });
 }

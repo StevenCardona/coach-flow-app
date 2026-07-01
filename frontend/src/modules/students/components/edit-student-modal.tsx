@@ -4,12 +4,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 
-import { CfModal, CfModalActions, CfSkeleton, QueryState } from "@/components/cf";
+import { CfModal, CfModalActions, CfSkeleton, CfTabs, QueryState } from "@/components/cf";
 import { Form } from "@/components/ui/form";
+import { getTodayDateString } from "@/lib/date";
 import { getApiErrorMessage } from "@/lib/http/api-helpers";
 import { toast } from "@/lib/toast";
 
-import { StudentFormFields } from "./student-form-fields";
+import {
+  StudentAdditionalFields,
+  StudentPersonalFields,
+} from "./student-form-fields";
+import { StudentPlanHistoryList } from "./student-plan-history-list";
+import { useAssignPlanMutation } from "../hooks/plan-histories/mutations";
 import { useUpdateStudentMutation } from "../hooks/students/mutations";
 import { useStudentQuery } from "../hooks/students/queries";
 import {
@@ -35,8 +41,11 @@ export function EditStudentModal({
   onOpenChange,
   onSuccess,
 }: EditStudentModalProps) {
+  const [activeTab, setActiveTab] = React.useState("personal");
   const studentQuery = useStudentQuery(studentId, { enabled: open && !!studentId });
   const updateMutation = useUpdateStudentMutation();
+  const assignPlanMutation = useAssignPlanMutation();
+  const initialPlanIdRef = React.useRef<string | null>(null);
 
   const form = useForm<EditStudentFormValues>({
     resolver: zodResolver(editStudentFormSchema),
@@ -45,7 +54,10 @@ export function EditStudentModal({
 
   React.useEffect(() => {
     if (open && studentQuery.data) {
-      form.reset(mapStudentToEditFormValues(studentQuery.data));
+      const values = mapStudentToEditFormValues(studentQuery.data);
+      initialPlanIdRef.current = values.planId ?? null;
+      form.reset(values);
+      setActiveTab("personal");
     }
   }, [open, studentQuery.data, form]);
 
@@ -55,6 +67,21 @@ export function EditStudentModal({
         id: studentId,
         body: mapEditFormToRequest(values),
       });
+
+      const nextPlanId = values.planId ?? null;
+      const initialPlanId = initialPlanIdRef.current;
+
+      if (nextPlanId && nextPlanId !== initialPlanId) {
+        await assignPlanMutation.mutateAsync({
+          studentId,
+          body: {
+            planId: nextPlanId,
+            startDate: getTodayDateString(),
+          },
+        });
+        initialPlanIdRef.current = nextPlanId;
+      }
+
       toast.success("Información del alumno actualizada");
       onOpenChange(false);
       onSuccess?.();
@@ -65,6 +92,9 @@ export function EditStudentModal({
     }
   });
 
+  const planId = form.watch("planId");
+  const isSaving = updateMutation.isPending || assignPlanMutation.isPending;
+
   return (
     <CfModal
       open={open}
@@ -72,15 +102,17 @@ export function EditStudentModal({
       title="Editar alumno"
       description="Actualiza la información del estudiante."
       size="lg"
-      loading={updateMutation.isPending}
+      loading={isSaving}
       footer={
-        <CfModalActions
-          onCancel={() => onOpenChange(false)}
-          onConfirm={handleSubmit}
-          confirmLabel="Guardar cambios"
-          loading={updateMutation.isPending}
-          disabled={studentQuery.isLoading || studentQuery.isError}
-        />
+        activeTab === "history" ? null : (
+          <CfModalActions
+            onCancel={() => onOpenChange(false)}
+            onConfirm={handleSubmit}
+            confirmLabel="Guardar cambios"
+            loading={isSaving}
+            disabled={studentQuery.isLoading || studentQuery.isError}
+          />
+        )
       }
     >
       <QueryState
@@ -91,10 +123,46 @@ export function EditStudentModal({
         {(student) => (
           <Form {...form}>
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <StudentFormFields
-                control={form.control}
-                mode="edit"
-                email={student.email}
+              <CfTabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                tabs={[
+                  {
+                    value: "personal",
+                    label: "Datos personales",
+                    content: (
+                      <StudentPersonalFields
+                        control={form.control}
+                        mode="edit"
+                        email={student.email}
+                        planId={planId}
+                        onPlanIdChange={(nextPlanId) =>
+                          form.setValue("planId", nextPlanId, {
+                            shouldDirty: true,
+                          })
+                        }
+                        selectedPlanLabel={student.activePlan?.name}
+                      />
+                    ),
+                  },
+                  {
+                    value: "additional",
+                    label: "Información adicional",
+                    content: (
+                      <StudentAdditionalFields control={form.control} />
+                    ),
+                  },
+                  {
+                    value: "history",
+                    label: "Historial de planes",
+                    content: (
+                      <StudentPlanHistoryList
+                        studentId={studentId}
+                        enabled={open && activeTab === "history"}
+                      />
+                    ),
+                  },
+                ]}
               />
             </form>
           </Form>

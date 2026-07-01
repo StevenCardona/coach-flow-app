@@ -49,6 +49,11 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   useEffect(() => {
     if (!user || user.role !== Role.STUDENT) return;
 
+    if (!user.student?.onboardingCompleted) {
+      router.replace("/onboarding");
+      return;
+    }
+
     const isCoachOnlyRoute = coachOnlyRoutePrefixes.some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
     );

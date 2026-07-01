@@ -4,6 +4,12 @@ import { Gender } from "@/lib/types/entities";
 
 const optionalText = z.string().optional();
 
+const planIdField = z
+  .string()
+  .uuid("Selecciona un plan válido")
+  .optional()
+  .nullable();
+
 export const createStudentFormSchema = z.object({
   name: z
     .string()
@@ -21,6 +27,7 @@ export const createStudentFormSchema = z.object({
   gender: z.nativeEnum(Gender).optional().nullable(),
   observations: optionalText,
   medicalCondition: optionalText,
+  planId: planIdField,
 });
 
 export const editStudentFormSchema = createStudentFormSchema.omit({ email: true });
@@ -36,6 +43,7 @@ export const createStudentDefaultValues: CreateStudentFormValues = {
   gender: null,
   observations: "",
   medicalCondition: "",
+  planId: null,
 };
 
 export const editStudentDefaultValues: EditStudentFormValues = {
@@ -45,4 +53,5 @@ export const editStudentDefaultValues: EditStudentFormValues = {
   gender: null,
   observations: "",
   medicalCondition: "",
+  planId: null,
 };

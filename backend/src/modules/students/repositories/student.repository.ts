@@ -14,6 +14,7 @@ import { Student } from "../models/student.model";
 import type {
   CreateStudentInput,
   StudentListItem,
+  StudentDetail,
   StudentsStats,
   UpdateStudentByCoachInput,
 } from "../types/student.types";
@@ -191,8 +192,43 @@ export const studentRepository = {
     };
   },
 
-  findByCoachAndId(coachId: string, studentId: string) {
-    return Student.findOne({ where: { id: studentId, coachId } });
+  async findByCoachAndId(coachId: string, studentId: string): Promise<StudentDetail | null> {
+    const student = await Student.findOne({
+      where: { id: studentId, coachId },
+      include: [
+        {
+          model: StudentPlanHistory,
+          as: "planHistories",
+          where: { status: PlanHistoryStatus.ACTIVE },
+          required: false,
+          separate: true,
+          limit: 1,
+          include: [{ model: Plan, as: "plan", attributes: ["id", "name"] }],
+        },
+      ],
+    });
+
+    if (!student) {
+      return null;
+    }
+
+    const plain = student.toJSON() as Record<string, unknown> & {
+      planHistories?: Array<{
+        plan?: { id: string; name: string };
+      }>;
+    };
+
+    const activeHistory = plain.planHistories?.[0];
+    const activePlan = activeHistory?.plan
+      ? { id: activeHistory.plan.id, name: activeHistory.plan.name }
+      : null;
+
+    const { planHistories: _planHistories, ...studentData } = plain;
+
+    return {
+      ...studentData,
+      activePlan,
+    } as StudentDetail;
   },
 
   setActive(studentId: string, isActive: boolean, transaction?: Transaction) {

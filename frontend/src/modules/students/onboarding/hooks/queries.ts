@@ -28,5 +28,6 @@ export function useFitnessGoalQuery(options?: { enabled?: boolean }) {
     queryKey: onboardingKeys.fitnessGoal(),
     queryFn: getFitnessGoal,
     enabled: options?.enabled ?? true,
+    retry: false,
   });
 }

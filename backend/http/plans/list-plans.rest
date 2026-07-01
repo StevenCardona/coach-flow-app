@@ -11,12 +11,16 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### List all plans
-GET {{baseUrl}}/plans
+### List plans (paginated)
+GET {{baseUrl}}/plans?page=1&pageSize=10&sortBy=name&sortOrder=asc
 Authorization: Bearer {{token}}
 
 ### List active plans only
-GET {{baseUrl}}/plans?active=true
+GET {{baseUrl}}/plans?page=1&pageSize=10&isActive=true
+Authorization: Bearer {{token}}
+
+### Search plans
+GET {{baseUrl}}/plans?page=1&pageSize=10&search=premium
 Authorization: Bearer {{token}}
 
 ### Get plan by ID

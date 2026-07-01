@@ -1,6 +1,6 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { UserX, Users } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -14,14 +14,16 @@ import {
   QueryState,
 } from "@/components/cf";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/format";
+import { calculateAge, formatDate } from "@/lib/format";
 import { getApiErrorMessage } from "@/lib/http/api-helpers";
 import { Gender } from "@/lib/types/entities";
 import type { StudentListItem } from "@/lib/types/entities";
 import { toast } from "@/lib/toast";
 
+import { AssignPlanDialog } from "../components/assign-plan-dialog";
 import { CreateStudentModal } from "../components/create-student-modal";
 import { EditStudentModal } from "../components/edit-student-modal";
+import { StudentActivePlanCell } from "../components/student-active-plan-cell";
 import { StudentsDashboard } from "../components/students-dashboard";
 import {
   useDeactivateStudentMutation,
@@ -65,6 +67,8 @@ export function StudentsPage() {
     null,
   );
   const [deactivateTarget, setDeactivateTarget] =
+    React.useState<StudentListItem | null>(null);
+  const [assignPlanTarget, setAssignPlanTarget] =
     React.useState<StudentListItem | null>(null);
 
   const debouncedSearch = useDebouncedValue(searchInput);
@@ -208,11 +212,31 @@ export function StudentsPage() {
             getRowKey={(student) => student.id}
             columns={[
               { key: "name", header: "Nombre", sortable: true },
-              { key: "email", header: "Correo", sortable: true },
+              {
+                key: "email",
+                header: "Correo",
+                sortable: true,
+                render: (student) => (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate">{student.email}</span>
+                    <Badge
+                      variant={student.isActive ? "default" : "secondary"}
+                      className="shrink-0"
+                    >
+                      {student.isActive ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </div>
+                ),
+              },
               {
                 key: "activePlan",
                 header: "Plan activo",
-                render: (student) => student.activePlan?.name ?? "—",
+                render: (student) => (
+                  <StudentActivePlanCell
+                    student={student}
+                    onAssignPlan={setAssignPlanTarget}
+                  />
+                ),
               },
               {
                 key: "birthday",
@@ -221,29 +245,24 @@ export function StudentsPage() {
                 render: (student) => formatDate(student.birthday),
               },
               {
+                key: "age",
+                header: "Edad",
+                render: (student) => calculateAge(student.birthday),
+              },
+              {
                 key: "gender",
                 header: "Género",
                 render: (student) =>
                   student.gender ? genderLabels[student.gender] : "—",
               },
               {
-                key: "isActive",
-                header: "Estado",
-                sortable: true,
-                render: (student) => (
-                  <Badge variant={student.isActive ? "default" : "secondary"}>
-                    {student.isActive ? "Activo" : "Inactivo"}
-                  </Badge>
-                ),
-              },
-              {
                 key: "id",
-                header: "Acciones",
                 render: (student) => (
                   <CardActions
                     actions={[
                       {
                         variant: "edit",
+                        iconOnly: true,
                         onClick: () => openEdit(student.id),
                       },
                       ...(student.isActive
@@ -251,6 +270,8 @@ export function StudentsPage() {
                             {
                               variant: "custom" as const,
                               label: "Inactivar",
+                              icon: <UserX className="size-4" />,
+                              iconOnly: true,
                               onClick: () => setDeactivateTarget(student),
                             },
                           ]
@@ -290,6 +311,15 @@ export function StudentsPage() {
           onSuccess={closeAction}
         />
       ) : null}
+
+      <AssignPlanDialog
+        student={assignPlanTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAssignPlanTarget(null);
+          }
+        }}
+      />
 
       <ConfirmDialog
         open={Boolean(deactivateTarget)}

@@ -2,11 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import {
-  createPlan,
-  deletePlan,
-  updatePlan,
-} from "../apis/plans";
+import { createPlan, deletePlan, updatePlan } from "../apis/plans";
 import type { CreatePlanRequest, UpdatePlanRequest } from "../types/requests";
 import { planKeys } from "./keys";
 

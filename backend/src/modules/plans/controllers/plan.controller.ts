@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
 
+import {
+  parsePaginationQuery,
+} from "../../../helpers/pagination.util";
+import type { PaginationQueryInput } from "../../../helpers/pagination.validation";
+import { getValidatedQuery } from "../../../helpers/validation.helper";
 import { planService } from "../services/plan.service";
 import type {
   CreatePlanBody,
@@ -21,10 +26,12 @@ export const planController = {
   },
 
   async list(req: Request, res: Response) {
-    const activeOnly = req.query.active === "true";
-    const plans = await planService.listByCoach(req.coach!.id, { activeOnly });
+    const query = parsePaginationQuery(
+      getValidatedQuery<PaginationQueryInput>(req),
+    );
+    const result = await planService.listByCoach(req.coach!.id, query);
 
-    res.success(plans, "Planes obtenidos");
+    res.success(result, "Planes obtenidos");
   },
 
   async getById(req: Request, res: Response) {

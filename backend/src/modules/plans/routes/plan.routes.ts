@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { paginationQuerySchema } from "../../../helpers/pagination.validation";
 import {
   asyncHandler,
   requireCoach,
@@ -21,7 +22,11 @@ router.post(
   asyncHandler(planController.create),
 );
 
-router.get("/", asyncHandler(planController.list));
+router.get(
+  "/",
+  validate(paginationQuerySchema, "query"),
+  asyncHandler(planController.list),
+);
 
 router.get("/:id", asyncHandler(planController.getById));
 
